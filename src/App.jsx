@@ -70,6 +70,13 @@ const plans = [
   { name: 'Enterprise', price: '$999', suffix: '/month', credits: '125,000 credits / month', description: 'For larger organizations and broader coverage.', cta: 'Choose Enterprise' },
 ]
 
+const humanPlans = [
+  { name: 'Free', price: '$0', credits: '500 credits', description: 'No credit card required.', cta: 'Start for free' },
+  { name: 'Starter', price: '$499', suffix: '/month', credits: '25,000 credits / month', description: 'For smaller teams that want professional supervision.', cta: 'Choose this plan' },
+  { name: 'Professional', price: '$999', suffix: '/month', credits: '100,000 credits / month', description: 'For growing teams with regular supervised reviews.', cta: 'Choose this plan' },
+  { name: 'Enterprise', price: '$2,999', suffix: '/month', credits: '500,000 credits / month', description: 'For organizations that need broad supervised coverage.', cta: 'Choose this plan' },
+]
+
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -89,8 +96,7 @@ function CheckIcon() {
 function Logo({ showBeta = false }) {
   return (
     <a className="brand" href="#top" aria-label="Verena home">
-      <span className="brand-mark" aria-hidden="true"><i /><i /></span>
-      <span className="brand-name">Verena</span>
+      <img className="brand-logo" src="/verena-logo.png" alt="Verena" />
       {showBeta && <span className="beta-badge">Beta</span>}
     </a>
   )
@@ -197,7 +203,9 @@ function HumanVisual() {
 
 function App() {
   const [activeCoverage, setActiveCoverage] = useState('accessibility')
+  const [pricingMode, setPricingMode] = useState('standard')
   const selected = useMemo(() => coverage.find((item) => item.id === activeCoverage) ?? coverage[0], [activeCoverage])
+  const activePlans = pricingMode === 'human' ? humanPlans : plans
 
   return (
     <div className="page-shell" id="top">
@@ -274,21 +282,23 @@ function App() {
             </div>
 
             <div className="coverage-workspace">
-              <div className="coverage-nav" role="tablist" aria-label="Compliance coverage areas">
-                {coverage.map((item, index) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeCoverage === item.id}
-                    className={activeCoverage === item.id ? 'coverage-nav__item is-active' : 'coverage-nav__item'}
-                    onClick={() => setActiveCoverage(item.id)}
-                  >
-                    <span>0{index + 1}</span>
-                    <div><strong>{item.label}</strong><small>{item.kicker}</small></div>
-                    <ArrowIcon />
-                  </button>
-                ))}
+              <div className="coverage-nav-wrap">
+                <div className="coverage-nav" role="tablist" aria-label="Compliance coverage areas">
+                  {coverage.map((item, index) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeCoverage === item.id}
+                      className={activeCoverage === item.id ? 'coverage-nav__item is-active' : 'coverage-nav__item'}
+                      onClick={() => setActiveCoverage(item.id)}
+                    >
+                      <span>0{index + 1}</span>
+                      <div><strong>{item.label}</strong><small>{item.kicker}</small></div>
+                      <ArrowIcon />
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <article className="finding-card" aria-live="polite">
@@ -311,7 +321,7 @@ function App() {
         <section className="section section--human" id="human">
           <div className="container human-layout">
             <div className="human-copy">
-              <p className="eyebrow human-eyebrow">+Human</p>
+              <p className="eyebrow human-eyebrow">+HUMAN</p>
               <h2>AI when it can help.<br />Human judgment when it matters.</h2>
               <p>With +Human, a professional from Invictus Counsel supervises Verena’s work. Findings that require legal judgment can be flagged for your +Human Supervisor.</p>
               <div className="button-row">
@@ -328,24 +338,30 @@ function App() {
             <div className="section-heading section-heading--center">
               <p className="eyebrow">Pricing</p>
               <h2>Start small. Scale the coverage when you need it.</h2>
-              <p>Every account starts with credits. Move up when your website, review cadence or team grows.</p>
+              <div className="pricing-tabs" role="tablist" aria-label="Pricing type">
+                <button type="button" role="tab" aria-selected={pricingMode === 'standard'} className={pricingMode === 'standard' ? 'is-active' : ''} onClick={() => setPricingMode('standard')}>Standard</button>
+                <button type="button" role="tab" aria-selected={pricingMode === 'human'} className={pricingMode === 'human' ? 'is-active' : ''} onClick={() => setPricingMode('human')}>+Human</button>
+              </div>
+              <p>{pricingMode === 'human' ? 'Includes a +Human Supervisor from Invictus Counsel.' : 'Every account starts with credits. Move up when your website, review cadence or team grows.'}</p>
             </div>
-            <div className="pricing-grid">
-              {plans.map((plan) => (
-                <article className="price-card" key={plan.name}>
-                  <div className="price-card__top">
-                    <div className="price-card__name-row"><p>{plan.name}</p></div>
-                    <div className="price"><strong>{plan.price}</strong>{plan.suffix && <span>{plan.suffix}</span>}</div>
-                    <p className="plan-description">{plan.description}</p>
-                  </div>
-                  <div className="price-card__bottom">
-                    <div className="credits"><CheckIcon /><span>{plan.credits}</span></div>
-                    <a href="#analyze" className="button button--outline">{plan.cta} <ArrowIcon /></a>
-                  </div>
-                </article>
-              ))}
+            <div className="pricing-scroll">
+              <div className="pricing-grid">
+                {activePlans.map((plan) => (
+                  <article className={`price-card ${pricingMode === 'human' ? 'price-card--human' : ''}`} key={`${pricingMode}-${plan.name}`}>
+                    <div className="price-card__top">
+                      <div className="price-card__name-row"><p>{plan.name}</p>{pricingMode === 'human' && <span>+Human</span>}</div>
+                      <div className="price"><strong>{plan.price}</strong>{plan.suffix && <span>{plan.suffix}</span>}</div>
+                      <p className="plan-description">{plan.description}</p>
+                    </div>
+                    <div className="price-card__bottom">
+                      <div className="credits"><CheckIcon /><span>{plan.credits}</span></div>
+                      <a href="#analyze" className={`button ${pricingMode === 'human' ? 'button--primary' : 'button--outline'}`}>{plan.cta} <ArrowIcon /></a>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
-            <p className="pricing-note">+Human supervision is available separately when a finding needs professional judgment.</p>
+            <p className="pricing-note">{pricingMode === 'human' ? '+Human plans combine Verena with professional supervision.' : '+Human supervision is available when a finding needs professional judgment.'}</p>
           </div>
         </section>
 
